@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 29
@@ -51,4 +52,14 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     compileOnly project(path: ':eventdispatcher-stub')
+}
+
+publish {
+    repoName = 'young'
+    userOrg = 'zhipengzhong'
+    groupId = 'young.eventdispatcher'
+    artifactId = 'eventdispatcher'
+    publishVersion = '1.0.0'
+    desc = ''
+    website = 'https://github.com/zhipengzhong/EventDispatcherSample'
 }

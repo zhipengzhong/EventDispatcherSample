@@ -91,7 +91,7 @@ public class EventDispatcher {
                 List<Object> objects = subscribers.get(subscriber.getClass());
                 if (objects == null) {
                     objects = new ArrayList<>();
-                    subscribers.put(subscribers.getClass(), objects);
+                    subscribers.put(subscriber.getClass(), objects);
                 }
                 objects.add(subscriber);
             }
