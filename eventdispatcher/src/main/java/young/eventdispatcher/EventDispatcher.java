@@ -50,7 +50,9 @@ public class EventDispatcher {
         synchronized (this) {
             mSubscriber.add(subscriber);
         }
-        mDispatcherHandle.postCache(subscriber);
+        if (mDispatcherHandle != null) {
+            mDispatcherHandle.postCache(subscriber);
+        }
     }
 
     /**
