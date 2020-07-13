@@ -39,8 +39,6 @@ import young.eventdispatcher.annotation.Subscribe;
 @AutoService(Processor.class)
 public class EventDispatcherProcessor extends AbstractProcessor {
 
-    private static final String JAVA_LANG_OBJECT = "java.lang.Object";
-    private static final String ANDROID_VIEW_VIEW = "android.view.View";
     private final static String DISPATCH = "dispatch";
     private final static String CLASS_NAME = "GeneratedDispatcherHandleImpl";
     private final static String PACKAGE_NAME = "young.eventdispatcher";
@@ -155,8 +153,9 @@ public class EventDispatcherProcessor extends AbstractProcessor {
 
                     registerSubscribeObj.add(subscribe.threadMode());
                     registerSubscribeObj.add(getClassFromAnnotation(subscribe));
+                    registerSubscribeObj.add(subscribe.cache());
 
-                    registerSubscribeStr.append("registerSubscribe($T.class,$N, $L, $T.class");
+                    registerSubscribeStr.append("registerSubscribe($T.class, $N, $L, $T.class, $L");
 
                     dispatchObj.add(0, name);
                     dispatchObj.add(executableElement.getSimpleName().toString());

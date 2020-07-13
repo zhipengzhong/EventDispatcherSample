@@ -42,12 +42,12 @@ public class MainActivity extends AppCompatActivity {
                     EventDispatcher.instance().post(1, MainActivity.class);
 
                     Thread.sleep(30000);
-                    Log.d(TAG, "run: send event 4");
+                    Log.d(TAG, "run: send event 5");
                     EventDispatcher.instance().post(1, MainActivity.class);
                 } catch (InterruptedException e) {
                 }
             }
-        });
+        }).start();
 
     }
 

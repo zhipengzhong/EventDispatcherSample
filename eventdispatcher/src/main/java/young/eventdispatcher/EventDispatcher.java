@@ -1,6 +1,10 @@
 package young.eventdispatcher;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class EventDispatcher {
 
@@ -32,6 +36,7 @@ public class EventDispatcher {
         synchronized (this) {
             mSubscriber.add(subscriber);
         }
+        mDispatcherHandle.postCache(subscriber);
     }
 
     public void unregister(Object subscriber) {
@@ -48,12 +53,19 @@ public class EventDispatcher {
         if (mDispatcherHandle == null) {
             return;
         }
+        Map<Class, List<Object>> subscribers = new HashMap<>();
         synchronized (this) {
             Iterator<?> iterator = mSubscriber.iterator();
             while (iterator.hasNext()) {
                 Object subscriber = iterator.next();
-                mDispatcherHandle.post(subscriber, event, flag);
+                List<Object> objects = subscribers.get(subscriber.getClass());
+                if (objects == null) {
+                    objects = new ArrayList<>();
+                    subscribers.put(subscribers.getClass(), objects);
+                }
+                objects.add(subscriber);
             }
         }
+        mDispatcherHandle.post(subscribers, event, flag);
     }
 }

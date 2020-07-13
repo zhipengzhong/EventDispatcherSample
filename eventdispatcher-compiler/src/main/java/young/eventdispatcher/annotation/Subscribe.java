@@ -14,4 +14,6 @@ public @interface Subscribe {
     ThreadMode threadMode() default ThreadMode.POSTING;
 
     Class flag() default Object.class;
+
+    boolean cache() default false;
 }

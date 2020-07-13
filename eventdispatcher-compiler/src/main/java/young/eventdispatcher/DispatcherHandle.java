@@ -1,12 +1,15 @@
 package young.eventdispatcher;
 
+import java.util.List;
+import java.util.Map;
+
 public abstract class DispatcherHandle {
 
     protected synchronized void registSubscribe(Class clazz, int methodId, ThreadMode mode, Class flag, Class... arg) {
         throw new RuntimeException("stub!");
     }
 
-    public void post(Object subscriber, Object event, Class flag) {
+    public void post(Map<Class, List<Object>> subscribers, Object event, Class flag) {
         throw new RuntimeException("stub!");
     }
 
