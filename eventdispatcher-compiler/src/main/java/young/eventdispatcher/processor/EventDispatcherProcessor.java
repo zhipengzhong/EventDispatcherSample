@@ -34,6 +34,7 @@ import javax.tools.Diagnostic;
 
 import young.eventdispatcher.DispatcherHandle;
 import young.eventdispatcher.ThreadMode;
+import young.eventdispatcher.WeakReferenceQueue;
 import young.eventdispatcher.annotation.Subscribe;
 
 @AutoService(Processor.class)
@@ -42,6 +43,7 @@ public class EventDispatcherProcessor extends AbstractProcessor {
     private final static String DISPATCH = "dispatch";
     private final static String CLASS_NAME = "GeneratedDispatcherHandleImpl";
     private final static String PACKAGE_NAME = "young.eventdispatcher";
+    private final static String VOID = "void";
     private TypeSpec.Builder mTypeSpec;
     private MethodSpec.Builder mConstructor;
     private MethodSpec.Builder mDispatch;
@@ -73,9 +75,11 @@ public class EventDispatcherProcessor extends AbstractProcessor {
                 .addParameter(Object.class, "subscriber")
                 .addParameter(Object.class, "event")
                 .beginControlFlow("switch (methodId)")
-                .returns(void.class);
+                .returns(Object.class);
 
         mConstructor = MethodSpec.constructorBuilder()
+                .addParameter(WeakReferenceQueue.class, "unsubscriber")
+                .addStatement("super(unsubscriber)")
                 .addModifiers(Modifier.PROTECTED);
         mTypeSpec = TypeSpec.classBuilder(CLASS_NAME)
                 .addModifiers(Modifier.FINAL)
@@ -92,7 +96,7 @@ public class EventDispatcherProcessor extends AbstractProcessor {
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
-            fatalError(writer.toString());
+            error(writer.toString());
             return true;
         }
     }
@@ -103,6 +107,7 @@ public class EventDispatcherProcessor extends AbstractProcessor {
         if (annotations.size() > 0) {
             mTypeSpec.addMethod(mConstructor.build());
             mDispatch.endControlFlow();
+            mDispatch.addStatement("return null");
             mTypeSpec.addMethod(mDispatch.build());
             JavaFile.builder(PACKAGE_NAME, mTypeSpec.build())
                     .addStaticImport(ThreadMode.POSTING)
@@ -156,12 +161,21 @@ public class EventDispatcherProcessor extends AbstractProcessor {
                     registerSubscribeObj.add(subscribe.threadMode());
                     registerSubscribeObj.add(getClassFromAnnotation(subscribe));
                     registerSubscribeObj.add(subscribe.cache());
+                    registerSubscribeObj.add(subscribe.priority());
 
-                    registerSubscribeStr.append("registerSubscribe($T.class, $N, $L, $T.class, $L");
+                    registerSubscribeStr.append("registerSubscribe($T.class, $N, $L, $T.class, $L, $L");
 
                     dispatchObj.add(0, name);
                     dispatchObj.add(executableElement.getSimpleName().toString());
-                    dispatchStr.append("case $N: getSubscribe(subscriber, $T.class).$L(");
+
+
+                    String r = executableElement.getReturnType().toString().toLowerCase();
+                    if (!VOID.equals(r)) {
+                        dispatchStr.append("case $N: return getSubscribe(subscriber, $T.class).$L(");
+                    } else {
+                        dispatchStr.append("case $N: getSubscribe(subscriber, $T.class).$L(");
+                    }
+
 
                     for (int i = 0; i < parameters.size(); i++) {
                         VariableElement parameter = parameters.get(i);
@@ -180,7 +194,11 @@ public class EventDispatcherProcessor extends AbstractProcessor {
                     registerSubscribeStr.append(")");
                     mConstructor.addStatement(registerSubscribeStr.toString(), registerSubscribeObj.toArray(new Object[]{}));
 
-                    dispatchStr.append("); break");
+                    if (!VOID.equals(r)) {
+                        dispatchStr.append(")");
+                    } else {
+                        dispatchStr.append("); break");
+                    }
                     mDispatch.addStatement(dispatchStr.toString(), dispatchObj.toArray(new Object[]{}));
 
                 }
@@ -208,7 +226,7 @@ public class EventDispatcherProcessor extends AbstractProcessor {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, msg);
     }
 
-    private void fatalError(String msg) {
+    private void error(String msg) {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "FATAL ERROR: " + msg);
     }
 }

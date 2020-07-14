@@ -31,6 +31,19 @@ public class WeakReferenceQueue<T> {
         }
     }
 
+    public boolean contains(T obj) {
+        cleanup();
+        ListEntry entry = mHead.mPrev;
+        while (entry != mHead) {
+            Object o = entry.get();
+            if (o == obj) {
+                return true;
+            }
+            entry = entry.mPrev;
+        }
+        return false;
+    }
+
 
     public Iterator<? extends T> iterator() {
         return new Iterator() {

@@ -6,24 +6,31 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
-import young.eventdispatcher.util.RunUtil;
+import young.eventdispatcher.util.PosterUtil;
 
 public abstract class DispatcherHandle {
 
     private Map<Class, SubscriberHelper> mSubscriberHelperMap = new HashMap<>();
+    private WeakReferenceQueue mUnsubscriber;
 
-    protected synchronized void registerSubscribe(Class clazz, int methodId, ThreadMode mode, Class flag, boolean cache, Class... arg) {
+    public DispatcherHandle(WeakReferenceQueue unsubscriber) {
+        mUnsubscriber = unsubscriber;
+    }
+
+    protected synchronized void registerSubscribe(Class clazz, int methodId, ThreadMode mode, Class flag, boolean cache, int priority, Class... arg) {
         SubscriberHelper helper = mSubscriberHelperMap.get(clazz);
         if (helper == null) {
             helper = new SubscriberHelper(clazz);
             mSubscriberHelperMap.put(clazz, helper);
         }
-        helper.putSubscribe(methodId, mode, flag, cache, arg);
+        helper.putSubscribe(methodId, mode, flag, cache, priority, arg);
     }
 
     public void post(Map<Class, List<Object>> subscribers, Object event, Class flag) {
         Set<Map.Entry<Class, SubscriberHelper>> entries = mSubscriberHelperMap.entrySet();
+        PendingPostQueue pendingPostQueue = null;
         for (Map.Entry<Class, SubscriberHelper> entry : entries) {
             Class clazz = entry.getKey();
             SubscriberHelper helper = entry.getValue();
@@ -33,9 +40,29 @@ public abstract class DispatcherHandle {
                     subscribeHelper.mCacheEvent = event;
                 }
                 List<Object> objects = subscribers.get(clazz);
-                if (objects != null) {
+                if (objects == null) {
+                    continue;
+                }
+                if (subscribeHelper.mPriority <= -1) {
                     for (Object object : objects) {
-                        dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, object, event);
+                        dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, object, event, false);
+                    }
+                } else {
+                    if (pendingPostQueue == null) {
+                        pendingPostQueue = new PendingPostQueue();
+                    }
+                    pendingPostQueue.add(new PendingPostQueue.PendingPost(subscribeHelper.mPriority,
+                            subscribeHelper.mMethodId, subscribeHelper.mMode, objects));
+                }
+            }
+        }
+        if (pendingPostQueue != null) {
+            Iterator<? extends PendingPostQueue.PendingPost> iterator = pendingPostQueue.iterator();
+            while (iterator.hasNext()) {
+                PendingPostQueue.PendingPost next = iterator.next();
+                for (Object object : next.mObjects) {
+                    if (dispatch(next.mMethodId, next.mMode, object, event, true)) {
+                        return;
                     }
                 }
             }
@@ -44,39 +71,71 @@ public abstract class DispatcherHandle {
 
     public void postCache(Object subscriber) {
         SubscriberHelper helper = mSubscriberHelperMap.get(subscriber.getClass());
+        if (helper == null) return;
         List<SubscriberHelper.SubscribeHelper> subscribe = helper.getSubscribe();
         Iterator<SubscriberHelper.SubscribeHelper> iterator = subscribe.iterator();
         while (iterator.hasNext()) {
             SubscriberHelper.SubscribeHelper subscribeHelper = iterator.next();
             if (subscribeHelper.mCache && subscribeHelper.mCacheEvent != null) {
-                dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, subscriber, subscribeHelper.mCacheEvent);
+                dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, subscriber, subscribeHelper.mCacheEvent, false);
             }
         }
     }
 
-    protected void dispatch(final int methodId, ThreadMode mode, final Object subscriber, final Object event) {
+    protected boolean dispatch(final int methodId, ThreadMode mode, final Object subscriber, final Object event, boolean waitResult) {
+        final Object[] result = {null};
+        final CountDownLatch[] countDownLatch = {null};
+        if (waitResult) {
+            countDownLatch[0] = new CountDownLatch(1);
+        }
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 try {
-                    dispatch(methodId, subscriber, event);
+                    synchronized (mUnsubscriber) {
+                        if (!mUnsubscriber.contains(subscriber)) {
+                            result[0] = dispatch(methodId, subscriber, event);
+                        }
+                    }
                 } catch (Throwable e) {
                     e.printStackTrace();
+                }
+                if (countDownLatch[0] != null) {
+                    countDownLatch[0].countDown();
                 }
             }
         };
         if (mode == ThreadMode.MAIN) {
-            RunUtil.runOnUiThread(runnable);
+            PosterUtil.runOnUiThread(runnable);
         } else if (mode == ThreadMode.POSTING) {
             runnable.run();
         } else if (mode == ThreadMode.BACKGROUND) {
-            RunUtil.runOnBackgroundThread(runnable);
+            PosterUtil.runOnBackgroundThread(runnable);
         } else if (mode == ThreadMode.ASYNC) {
-            RunUtil.runOnAsyncThread(runnable);
+            PosterUtil.runOnAsyncThread(runnable);
         }
+        if (!waitResult) {
+            return false;
+        }
+        try {
+            countDownLatch[0].await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+        Object o = result[0];
+        if (o == null) {
+            return false;
+        }
+
+        if (Boolean.class.isAssignableFrom(o.getClass())) {
+            return ((Boolean) o).booleanValue();
+        }
+
+        return false;
     }
 
-    protected abstract void dispatch(int methodId, Object subscriber, Object event);
+    protected abstract Object dispatch(int methodId, Object subscriber, Object event);
 
 
     protected <T> T getSubscribe(Object subscriber, Class<T> t) {
@@ -108,8 +167,8 @@ public abstract class DispatcherHandle {
             mTypeClzz = clazz;
         }
 
-        private void putSubscribe(int methodId, ThreadMode mode, Class flag, boolean cache, Class[] arg) {
-            mSubscribeHelpers.add(new SubscribeHelper(methodId, mode, flag, cache, arg));
+        private void putSubscribe(int methodId, ThreadMode mode, Class flag, boolean cache, int priority, Class[] arg) {
+            mSubscribeHelpers.add(new SubscribeHelper(methodId, mode, flag, cache, priority, arg));
         }
 
         private List<SubscribeHelper> getSubscribe() {
@@ -144,14 +203,16 @@ public abstract class DispatcherHandle {
             private final ThreadMode mMode;
             private final Class mFlag;
             private boolean mCache;
+            private int mPriority;
             private final Class[] mArg;
             public Object mCacheEvent;
 
-            public SubscribeHelper(int methodId, ThreadMode mode, Class flag, boolean cache, Class[] arg) {
+            public SubscribeHelper(int methodId, ThreadMode mode, Class flag, boolean cache, int priority, Class[] arg) {
                 mMethodId = methodId;
                 mMode = mode;
                 mFlag = flag;
                 mCache = cache;
+                mPriority = priority;
                 mArg = arg;
             }
         }

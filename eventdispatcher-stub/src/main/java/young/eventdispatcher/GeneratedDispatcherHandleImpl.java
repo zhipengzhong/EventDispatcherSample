@@ -8,6 +8,10 @@ import java.util.Map;
  */
 public class GeneratedDispatcherHandleImpl {
 
+    public GeneratedDispatcherHandleImpl(WeakReferenceQueue unsubscriber) {
+        throw new RuntimeException("stub!");
+    }
+
     public void post(Map<Class, List<Object>> subscribers, Object event, Class flag) {
         throw new RuntimeException("stub!");
     }

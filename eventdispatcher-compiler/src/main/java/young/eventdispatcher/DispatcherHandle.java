@@ -17,6 +17,6 @@ public abstract class DispatcherHandle {
         throw new RuntimeException("stub!");
     }
 
-    protected abstract void dispatch(int methodId, Object subscriber, Object event);
+    protected abstract Object dispatch(int methodId, Object subscriber, Object event);
 
 }

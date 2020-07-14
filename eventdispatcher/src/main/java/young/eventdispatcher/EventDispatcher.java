@@ -13,11 +13,12 @@ public class EventDispatcher {
     static EventDispatcher sEventDispatcher;
 
     private WeakReferenceQueue<Object> mSubscriber = new WeakReferenceQueue<>();
+    private WeakReferenceQueue<Object> mUnsubscriber = new WeakReferenceQueue<>();
     private GeneratedDispatcherHandleImpl mDispatcherHandle;
 
     private EventDispatcher() {
         try {
-            mDispatcherHandle = new GeneratedDispatcherHandleImpl();
+            mDispatcherHandle = new GeneratedDispatcherHandleImpl(mUnsubscriber);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -63,6 +64,9 @@ public class EventDispatcher {
     public void unregister(Object subscriber) {
         synchronized (this) {
             mSubscriber.remove(subscriber);
+        }
+        synchronized (mUnsubscriber) {
+            mUnsubscriber.add(subscriber);
         }
     }
 

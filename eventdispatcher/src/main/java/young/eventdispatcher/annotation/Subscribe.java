@@ -31,4 +31,14 @@ public @interface Subscribe {
      * @return
      */
     boolean cache() default false;
+
+    /**
+     * The priority value must >= -1.
+     * If == -1, The events that the subscriber receives will be unordered;
+     * If >= 0, A smaller priority value will receive events faster, even if the subscriber is in a different thread.
+     * An ordered subscriber can intercept the event by returning true and terminate the event received by a lower priority subscriber
+     *
+     * @return
+     */
+    int priority() default -1;
 }

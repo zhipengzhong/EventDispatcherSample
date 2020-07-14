@@ -16,4 +16,6 @@ public @interface Subscribe {
     Class flag() default Object.class;
 
     boolean cache() default false;
+
+    int priority() default -1;
 }
