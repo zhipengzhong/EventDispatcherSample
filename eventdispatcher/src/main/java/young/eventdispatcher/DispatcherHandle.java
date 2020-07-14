@@ -69,6 +69,10 @@ public abstract class DispatcherHandle {
             RunUtil.runOnUiThread(runnable);
         } else if (mode == ThreadMode.POSTING) {
             runnable.run();
+        } else if (mode == ThreadMode.BACKGROUND) {
+            RunUtil.runOnBackgroundThread(runnable);
+        } else if (mode == ThreadMode.ASYNC) {
+            RunUtil.runOnAsyncThread(runnable);
         }
     }
 

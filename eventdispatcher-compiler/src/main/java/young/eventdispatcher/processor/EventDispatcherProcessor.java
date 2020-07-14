@@ -107,6 +107,8 @@ public class EventDispatcherProcessor extends AbstractProcessor {
             JavaFile.builder(PACKAGE_NAME, mTypeSpec.build())
                     .addStaticImport(ThreadMode.POSTING)
                     .addStaticImport(ThreadMode.MAIN)
+                    .addStaticImport(ThreadMode.BACKGROUND)
+                    .addStaticImport(ThreadMode.ASYNC)
                     .build()
                     .writeTo(processingEnv.getFiler());
         }

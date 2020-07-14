@@ -28,26 +28,14 @@ public class MainActivity extends AppCompatActivity {
                     Thread.sleep(3000);
                     Log.d(TAG, "run: send event 1");
                     EventDispatcher.instance().post("event 1");
-
-                    Thread.sleep(3000);
-                    Log.d(TAG, "run: send event 2");
-                    EventDispatcher.instance().post("event 2", MainActivity.class);
-
-                    Thread.sleep(3000);
-                    Log.d(TAG, "run: send event 3");
-                    EventDispatcher.instance().post("event 3", MainActivity.class);
-
-                    Thread.sleep(3000);
-                    Log.d(TAG, "run: send event 4");
-                    EventDispatcher.instance().post(1, MainActivity.class);
-
-                    Thread.sleep(30000);
-                    Log.d(TAG, "run: send event 5");
-                    EventDispatcher.instance().post(1, MainActivity.class);
                 } catch (InterruptedException e) {
                 }
             }
         }).start();
+
+
+        Log.d(TAG, "run: send event 2");
+        EventDispatcher.instance().post("event 2");
 
     }
 
@@ -59,22 +47,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe()
-    public void test1(String test) {
-        Log.d(TAG, "test1 Thread:" + Thread.currentThread().getName() + "  event:" + test);
+    public void testThreadMode1(String test) {
+        Log.d(TAG, "testThreadMode1 Thread:" + Thread.currentThread().getName() + "  event:" + test);
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void testThreadMode2(String test) {
+        Log.d(TAG, "testThreadMode2 Thread:" + Thread.currentThread().getName() + "  event:" + test);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void test2(String test) {
-        Log.d(TAG, "test2 Thread:" + Thread.currentThread().getName() + "  event:" + test);
+    public void testThreadMode3(String test) {
+        Log.d(TAG, "testThreadMode3 Thread:" + Thread.currentThread().getName() + "  event:" + test);
     }
 
-    @Subscribe(flag = MainActivity.class, threadMode = ThreadMode.MAIN)
-    public void test3(String test, Integer i) {
-        Log.d(TAG, "test3 Thread:" + Thread.currentThread().getName() + "  event:" + test + "  " + i);
-    }
-
-    public void gotoTest(View view) {
-        startActivity(new Intent(this, TestActivity.class));
-        finish();
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void testThreadMode4(String test) {
+        Log.d(TAG, "testThreadMode4 Thread:" + Thread.currentThread().getName() + "  event:" + test);
     }
 }
