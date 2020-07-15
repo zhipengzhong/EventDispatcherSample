@@ -59,7 +59,7 @@ publish {
     userOrg = 'zhipengzhong'
     groupId = 'young.eventdispatcher'
     artifactId = 'eventdispatcher'
-    publishVersion = '1.0.0'
+    publishVersion = '1.0.1'
     desc = ''
     website = 'https://github.com/zhipengzhong/EventDispatcherSample'
 }
