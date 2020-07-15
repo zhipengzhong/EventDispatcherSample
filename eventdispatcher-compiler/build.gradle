@@ -29,7 +29,7 @@ publish {
     userOrg = 'zhipengzhong'
     groupId = 'young.eventdispatcher'
     artifactId = 'eventdispatcher-compiler'
-    publishVersion = '1.0.1'
+    publishVersion = '1.0.2'
     desc = ''
     website = 'https://github.com/zhipengzhong/EventDispatcherSample'
 }
