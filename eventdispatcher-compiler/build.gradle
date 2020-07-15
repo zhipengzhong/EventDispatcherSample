@@ -14,8 +14,8 @@ buildscript {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.google.auto.service:auto-service:1.0-rc7'
-    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
+//    implementation 'com.google.auto.service:auto-service:1.0-rc7'
+//    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
     implementation 'com.squareup:javapoet:1.12.1'
     implementation 'com.google.code.gson:gson:2.8.6'
 }

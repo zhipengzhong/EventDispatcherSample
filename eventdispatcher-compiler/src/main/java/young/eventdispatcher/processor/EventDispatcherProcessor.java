@@ -1,7 +1,5 @@
 package young.eventdispatcher.processor;
 
-import com.google.auto.service.AutoService;
-import com.google.common.collect.ImmutableSet;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -14,12 +12,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -37,7 +35,6 @@ import young.eventdispatcher.ThreadMode;
 import young.eventdispatcher.WeakReferenceQueue;
 import young.eventdispatcher.annotation.Subscribe;
 
-@AutoService(Processor.class)
 public class EventDispatcherProcessor extends AbstractProcessor {
 
     private final static String DISPATCH = "dispatch";
@@ -56,7 +53,9 @@ public class EventDispatcherProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return ImmutableSet.of(Subscribe.class.getName());
+        HashSet<String> set = new HashSet<>();
+        set.add(Subscribe.class.getName());
+        return set;
     }
 
     @Override
