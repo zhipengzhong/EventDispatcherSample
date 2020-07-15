@@ -23,24 +23,24 @@ android {
         }
     }
 
-    def SDK_NAME = "eventdispatcher"
-    def SDK_VERSION = "_${defaultConfig.versionName}"
-    def sdkDestinationPath = "build/makeJar/"
-    def zipFile = file('build/intermediates/packaged-classes/release/classes.jar')
-
-    task deleteBuild(type: Delete) {
-//        delete sdkDestinationPath + SDK_NAME + SDK_VERSION + ".jar"
-        delete sdkDestinationPath + SDK_NAME + ".jar"
-    }
-
-    task makeJar(type: Jar) {
-        from zipTree(zipFile)
-//        baseName = SDK_NAME + SDK_VERSION
-        baseName = SDK_NAME
-        destinationDir = file(sdkDestinationPath)
-    }
-
-    makeJar.dependsOn(deleteBuild, build)
+//    def SDK_NAME = "eventdispatcher"
+//    def SDK_VERSION = "_${defaultConfig.versionName}"
+//    def sdkDestinationPath = "build/makeJar/"
+//    def zipFile = file('build/intermediates/packaged-classes/release/classes.jar')
+//
+//    task deleteBuild(type: Delete) {
+////        delete sdkDestinationPath + SDK_NAME + SDK_VERSION + ".jar"
+//        delete sdkDestinationPath + SDK_NAME + ".jar"
+//    }
+//
+//    task makeJar(type: Jar) {
+//        from zipTree(zipFile)
+////        baseName = SDK_NAME + SDK_VERSION
+//        baseName = SDK_NAME
+//        destinationDir = file(sdkDestinationPath)
+//    }
+//
+//    makeJar.dependsOn(deleteBuild, build)
 
 }
 

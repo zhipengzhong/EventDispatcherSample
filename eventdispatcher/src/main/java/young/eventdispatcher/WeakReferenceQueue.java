@@ -4,6 +4,7 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 
+@SuppressWarnings({"deprecation", "unchecked"})
 public class WeakReferenceQueue<T> {
 
     private final ReferenceQueue mGarbage = new ReferenceQueue();
@@ -96,20 +97,20 @@ public class WeakReferenceQueue<T> {
 
         volatile ListEntry mPrev, mNext;
 
-        public ListEntry(Object o, ReferenceQueue queue) {
+        private ListEntry(Object o, ReferenceQueue queue) {
             super(o, queue);
             mPrev = this;
             mNext = this;
         }
 
-        public void insert(ListEntry where) {
+        private void insert(ListEntry where) {
             mPrev = where;
             mNext = where.mNext;
             where.mNext = this;
             mNext.mPrev = this;
         }
 
-        public void remove() {
+        private void remove() {
             mPrev.mNext = mNext;
             mNext.mPrev = mPrev;
             mNext = this;

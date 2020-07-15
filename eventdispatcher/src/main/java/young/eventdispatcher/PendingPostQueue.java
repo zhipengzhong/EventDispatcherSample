@@ -3,6 +3,7 @@ package young.eventdispatcher;
 import java.util.Iterator;
 import java.util.List;
 
+@SuppressWarnings({"deprecation", "unchecked"})
 final class PendingPostQueue {
 
     private PendingPost mHead = new PendingPost(-1, 0, null, null);
@@ -74,14 +75,14 @@ final class PendingPostQueue {
             mObjects = objects;
         }
 
-        public void insert(PendingPost where) {
+        private void insert(PendingPost where) {
             mPrev = where;
             mNext = where.mNext;
             where.mNext = this;
             mNext.mPrev = this;
         }
 
-        public void remove() {
+        private void remove() {
             mPrev.mNext = mNext;
             mNext.mPrev = mPrev;
             mNext = this;

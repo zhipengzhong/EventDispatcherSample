@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 
 import young.eventdispatcher.util.PosterUtil;
 
+@SuppressWarnings({"deprecation", "unchecked"})
 public abstract class DispatcherHandle {
 
     private Map<Class, SubscriberHelper> mSubscriberHelperMap = new HashMap<>();
@@ -82,7 +83,7 @@ public abstract class DispatcherHandle {
         }
     }
 
-    protected boolean dispatch(final int methodId, ThreadMode mode, final Object subscriber, final Object event, boolean waitResult) {
+    private boolean dispatch(final int methodId, ThreadMode mode, final Object subscriber, final Object event, boolean waitResult) {
         final Object[] result = {null};
         final CountDownLatch[] countDownLatch = {null};
         if (waitResult) {
