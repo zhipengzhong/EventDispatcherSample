@@ -14,9 +14,10 @@ import young.eventdispatcher.util.PosterUtil;
 public abstract class DispatcherHandle {
 
     private Map<Class, SubscriberHelper> mSubscriberHelperMap = new HashMap<>();
+    private List<Class> mSubscriberRegisterTypes = new ArrayList<>();
     private WeakReferenceQueue mUnsubscriber;
 
-    public DispatcherHandle(WeakReferenceQueue unsubscriber) {
+    protected DispatcherHandle(WeakReferenceQueue unsubscriber) {
         mUnsubscriber = unsubscriber;
     }
 
@@ -25,11 +26,12 @@ public abstract class DispatcherHandle {
         if (helper == null) {
             helper = new SubscriberHelper(clazz);
             mSubscriberHelperMap.put(clazz, helper);
+            mSubscriberRegisterTypes.add(clazz);
         }
         helper.putSubscribe(methodId, mode, flag, cache, priority, arg);
     }
 
-    public void post(Map<Class, List<Object>> subscribers, Object event, Class flag) {
+    protected void post(Map<Class, List<Object>> subscribers, Object event, Class flag) {
         Set<Map.Entry<Class, SubscriberHelper>> entries = mSubscriberHelperMap.entrySet();
         PendingPostQueue pendingPostQueue = null;
         for (Map.Entry<Class, SubscriberHelper> entry : entries) {
@@ -70,7 +72,7 @@ public abstract class DispatcherHandle {
         }
     }
 
-    public void postCache(Object subscriber) {
+    protected void postCache(Object subscriber) {
         SubscriberHelper helper = mSubscriberHelperMap.get(subscriber.getClass());
         if (helper == null) return;
         List<SubscriberHelper.SubscribeHelper> subscribe = helper.getSubscribe();
@@ -81,6 +83,10 @@ public abstract class DispatcherHandle {
                 dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, subscriber, subscribeHelper.mCacheEvent, false);
             }
         }
+    }
+
+    protected List<Class> subscriberTypes() {
+        return mSubscriberRegisterTypes;
     }
 
     private boolean dispatch(final int methodId, ThreadMode mode, final Object subscriber, final Object event, boolean waitResult) {

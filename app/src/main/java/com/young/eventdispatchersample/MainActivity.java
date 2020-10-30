@@ -24,32 +24,23 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                TestSubscriber[] subscribers = new TestSubscriber[5];
-                for (int i = 0; i < 100000; i++) {
-                    for (int j = 0; j < 5; j++) {
-                        subscribers[j] = new TestSubscriber();
-                    }
-                    for (int j = 0; j < 5; j++) {
-                        subscribers[j].unregister();
-                    }
-                }
-            }
-        }).start();
+                TestSubscriber1 testSubscriber1 = new TestSubscriber1();
+                TestSubscriber2 testSubscriber2 = new TestSubscriber2();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < 100000; i++) {
-                    EventDispatcher.instance().post("event");
-                }
+                Log.d(TAG, "run: send event 1");
+                EventDispatcher.instance().post("event 1");
+
+                testSubscriber1.unregister();
+                testSubscriber2.unregister();
+
+                Log.d(TAG, "run: send event 2");
+                EventDispatcher.instance().post("event 2");
             }
         }).start();
 
 
 
-        Log.d(TAG, "run: send event 2");
         mTimeMillis = System.currentTimeMillis();
-        EventDispatcher.instance().post("event 2");
     }
 
     @Override

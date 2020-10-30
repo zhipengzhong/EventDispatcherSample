@@ -94,12 +94,17 @@ public class EventDispatcher {
             Iterator<?> iterator = mSubscriber.iterator();
             while (iterator.hasNext()) {
                 Object subscriber = iterator.next();
-                List<Object> objects = subscribers.get(subscriber.getClass());
-                if (objects == null) {
-                    objects = new ArrayList<>();
-                    subscribers.put(subscriber.getClass(), objects);
+                for (Class clazz : mDispatcherHandle.subscriberTypes()) {
+                    if (!clazz.isAssignableFrom(subscriber.getClass())) {
+                        continue;
+                    }
+                    List<Object> objects = subscribers.get(clazz);
+                    if (objects == null) {
+                        objects = new ArrayList<>();
+                        subscribers.put(clazz, objects);
+                    }
+                    objects.add(subscriber);
                 }
-                objects.add(subscriber);
             }
         }
         mDispatcherHandle.post(subscribers, event, flag);
