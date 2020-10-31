@@ -73,14 +73,19 @@ public abstract class DispatcherHandle {
     }
 
     protected void postCache(Object subscriber) {
-        SubscriberHelper helper = mSubscriberHelperMap.get(subscriber.getClass());
-        if (helper == null) return;
-        List<SubscriberHelper.SubscribeHelper> subscribe = helper.getSubscribe();
-        Iterator<SubscriberHelper.SubscribeHelper> iterator = subscribe.iterator();
-        while (iterator.hasNext()) {
-            SubscriberHelper.SubscribeHelper subscribeHelper = iterator.next();
-            if (subscribeHelper.mCache && subscribeHelper.mCacheEvent != null) {
-                dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, subscriber, subscribeHelper.mCacheEvent, false);
+        for (Class clazz : subscriberTypes()) {
+            if (!clazz.isAssignableFrom(subscriber.getClass())) {
+                continue;
+            }
+            SubscriberHelper helper = mSubscriberHelperMap.get(clazz);
+            if (helper == null) return;
+            List<SubscriberHelper.SubscribeHelper> subscribe = helper.getSubscribe();
+            Iterator<SubscriberHelper.SubscribeHelper> iterator = subscribe.iterator();
+            while (iterator.hasNext()) {
+                SubscriberHelper.SubscribeHelper subscribeHelper = iterator.next();
+                if (subscribeHelper.mCache && subscribeHelper.mCacheEvent != null) {
+                    dispatch(subscribeHelper.mMethodId, subscribeHelper.mMode, subscriber, subscribeHelper.mCacheEvent, false);
+                }
             }
         }
     }

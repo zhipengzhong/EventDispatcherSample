@@ -17,6 +17,11 @@ public class TestSubscriberBase {
         Log.d("TAG", "this:" + this.toString() + " test: " + s);
     }
 
+    @Subscribe(cache = true)
+    public void test1(String s) {
+        Log.d("TAG", "this:" + this.toString() + " test1: " + s);
+    }
+
     public void unregister() {
         EventDispatcher.instance().unregister(this);
         Log.d("TAG", "this:" + this.toString() + " unregister");

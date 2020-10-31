@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                EventDispatcher.instance().post("event 0");
+
                 TestSubscriber1 testSubscriber1 = new TestSubscriber1();
                 TestSubscriber2 testSubscriber2 = new TestSubscriber2();
 
