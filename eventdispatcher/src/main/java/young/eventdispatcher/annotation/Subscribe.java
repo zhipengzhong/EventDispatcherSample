@@ -9,7 +9,7 @@ import young.eventdispatcher.EventDispatcher;
 import young.eventdispatcher.ThreadMode;
 
 @Target(ElementType.METHOD)
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.SOURCE)
 public @interface Subscribe {
 
     /**

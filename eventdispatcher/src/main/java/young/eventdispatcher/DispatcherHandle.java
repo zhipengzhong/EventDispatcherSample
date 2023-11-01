@@ -105,15 +105,13 @@ public abstract class DispatcherHandle {
             public void run() {
                 try {
                     synchronized (mUnsubscriber) {
-                        if (!mUnsubscriber.contains(subscriber)) {
-                            result[0] = dispatch(methodId, subscriber, event);
-                        }
+                        if (mUnsubscriber.contains(subscriber)) return;
                     }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-                if (countDownLatch[0] != null) {
-                    countDownLatch[0].countDown();
+                    result[0] = dispatch(methodId, subscriber, event);
+                } finally {
+                    if (countDownLatch[0] != null) {
+                        countDownLatch[0].countDown();
+                    }
                 }
             }
         };

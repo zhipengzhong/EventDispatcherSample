@@ -1,6 +1,7 @@
 package com.young.eventdispatchersample;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,7 +11,7 @@ import young.eventdispatcher.annotation.Subscribe;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "EventDispatcher MainActivity";
     private long mTimeMillis;
 
     @Override
@@ -26,14 +27,26 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 EventDispatcher.instance().post("event 0");
 
-                TestSubscriber1 testSubscriber1 = new TestSubscriber1();
-                TestSubscriber2 testSubscriber2 = new TestSubscriber2();
+                final TestSubscriber1 testSubscriber1 = new TestSubscriber1();
+                final TestSubscriber2 testSubscriber2 = new TestSubscriber2();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(100);
+                        Log.d(TAG, "run: unregister");
+                        testSubscriber1.unregister();
+                        testSubscriber2.unregister();
+                    }
+                }).start();
 
                 Log.d(TAG, "run: send event 1");
                 EventDispatcher.instance().post("event 1");
 
-                testSubscriber1.unregister();
-                testSubscriber2.unregister();
+//                testSubscriber1.unregister();
+//                testSubscriber2.unregister();
+
+                SystemClock.sleep(500);
 
                 Log.d(TAG, "run: send event 2");
                 EventDispatcher.instance().post("event 2");
